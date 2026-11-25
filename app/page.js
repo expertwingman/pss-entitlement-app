@@ -11,13 +11,13 @@ export default function Home() {
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [checking, setChecking] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        // Cek apakah admin
         const { data: prof } = await supabase
           .from('profiles')
           .select('is_admin')
@@ -28,10 +28,16 @@ export default function Home() {
         } else {
           router.push('/dashboard');
         }
+      } else {
+        setChecking(false);
       }
     };
     checkSession();
   }, []);
+
+  if (checking) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  }
 
   const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
@@ -101,7 +107,8 @@ export default function Home() {
             loyalty_score: 0,
             is_kyc_verified: false,
             is_community_verified: false,
-            community_name: 'None'
+            community_name: 'None',
+            is_admin: false
           }]);
 
         if (insertError && insertError.code !== '23505') {
